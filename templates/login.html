@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Welcome to Flask Task</h1>
+    <h2>Please login to your see your tasks</h2>
+    <form action="" method="POST" name="login">
+        <input type="text" name="username" placeholder="username" value="{{ request.form.username }}" />
+        <br/>
+        <input type="password" name="password" placeholder="password" />
+        <br/>
+        <input type="submit" value="Login" class="button" />
+    </form>
+{% endblock %}
