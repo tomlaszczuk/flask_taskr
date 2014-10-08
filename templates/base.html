@@ -10,6 +10,11 @@
                 {{ message }}
             </div>
             {% endfor %}
+            {% if error %}
+            <div class="error">
+                <strong>{{ error }}</strong>
+            </div>
+            {% endif %}
 
             {% block content %}
             {% endblock %}

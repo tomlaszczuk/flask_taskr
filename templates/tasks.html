@@ -7,6 +7,7 @@
     <table>
         <tr>
             <form action="{{ url_for('add_task') }}" method="POST" name="add-task">
+            {{ form. csrf_token }}
                 <td>
                     <input type="text" name="name" placeholder="name" />
                 </td>
@@ -56,7 +57,7 @@
                     <td width="100px">{{ task.due_date }}</td>
                     <td width="50px">{{ task.priority }}</td>
                     <td>
-                        <a href="{{ url_for('complete_task', task_id=task.task_id) }}">Mark as complete </a>|
+                        <a href="{{ url_for('complete_task', task_id=task.task_id) }}">Mark as complete </a><br/>
                         <a href="{{ url_for('delete_task', task_id=task.task_id) }}"> Delete task</a>
                     </td>
                 </tr>
