@@ -3,10 +3,10 @@
     <h1>Welcome to Flask Task</h1>
     <h2>Please login to your see your tasks</h2>
     <form action="" method="POST" name="login">
-        <input type="text" name="username" placeholder="username" value="{{ request.form.username }}" />
-        <br/>
-        <input type="password" name="password" placeholder="password" />
-        <br/>
+        {{ form.csrf_token }}
+        <p>{{ form.name.label }}: {{ form.name }}</p>
+        <p>{{ form.password.label }}: {{ form.password }}</p>
         <input type="submit" value="Login" class="button" />
     </form>
+    <p>Fresh meat? Please register your account <a href="{{ url_for('register') }}">here</a>, first</p>
 {% endblock %}
