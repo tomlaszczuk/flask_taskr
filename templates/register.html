@@ -1,12 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to the Flask Task</h1>
-<h3>Please register your account</h3>
-<form method="POST" action="" name="register">
+<form class="form-signin" role="form" method="POST" action="" name="register">
     {{ form.csrf_token }}
-    <p>{{ form.name.label }}: {{ form.name }} &nbsp;&nbsp; {{ form.email.label }}: {{ form.email }}</p>
-    <p>{{ form.password.label }}: {{ form.password }} &nbsp;&nbsp; {{ form.confirm.label }}: {{ form.confirm }}</p>
-    <input type="submit" class="button" value="Register" />
+    <div class="lead">Please register your account</div>
+    <p>
+        {{ form.name(placeholder="name") }}
+        <span class="error">
+            {% if form.name.errors %}
+                {% for error in form.name.errors %}
+                    {{ error }}
+                {% endfor %}
+            {% endif %}
+        </span>
+    </p>
+    <p>
+        {{ form.email(placeholder="e-mail adress") }}
+        <span class="error">
+            {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    {{ error }}
+                {% endfor %}
+            {% endif %}
+        </span>
+    </p>
+    <p>
+        {{ form.password(placeholder="password") }}
+        <span class="error">
+            {% if form.name.password %}
+                {% for error in form.name.password %}
+                    {{ error }}
+                {% endfor %}
+            {% endif %}
+        </span>
+    </p>
+    <p>
+        {{ form.confirm(placeholder="repeat password") }}
+        <span class="error">
+            {% if form.confirm.errors %}
+                {% for error in form.confirm.errors %}
+                    {{ error }}
+                {% endfor %}
+            {% endif %}
+        </span>
+    </p>
+    <button type="submit" class="btn btn-sm btn-succes">Register</button>
 </form>
 <p>Already registered? Please, click <a href="{{ url_for('login') }}">here</a> to login</p>
 {% endblock %}

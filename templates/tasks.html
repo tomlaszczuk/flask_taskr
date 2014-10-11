@@ -1,42 +1,46 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to Flask Task</h1>
-<a href="{{ url_for('logout') }}">Logout</a>
+<p>You are logged in as {{ user.name }}. Click <a href="{{ url_for('logout') }}">here</a> to logout</p>
 <div class="add-task">
-    <h3>Add a new task</h3>
-    <table>
-        <tr>
-            <form action="{{ url_for('add_task') }}" method="POST" name="add-task">
-            {{ form. csrf_token }}
-                <td>
-                    <input type="text" name="name" placeholder="name" />
-                </td>
-                <td>
-                    <input type="text" name="due_date" placeholder="Due date (YYYY/MM/DD)" width="120px" />
-                </td>
-                <td>
-                    <label>Priority:</label>
-                    <select name="priority" witdh="100px">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                    </select>
-                </td>
-                <td>
-                    &nbsp;
-                    &nbsp;
-                    <input type="submit" class="button" value="Add task" />
-                </td>
-            </form>
-        </tr>
-    </table>
+    <form class="form-signin" role="form" action="{{ url_for('add_task') }}" method="POST" name="add-task">
+        {{ form.csrf_token }}
+        <div class="lead">Add a new task</div>
+        <p>
+            {{ form.name(placeholder="name") }}
+            <span class="error">
+                {% if name_errors %}
+                    {% for error in name_errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% endif %}
+            </span>
+        </p>
+        <p>
+            {{ form.due_date(placeholder="Due date (YYYY/MM/DD)") }}
+            <span class="error">
+                {% if due_date_errors %}
+                    {% for error in due_date_errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% endif %}
+            </span>
+        </p>
+        <p>
+            {{ form.priority.label }}
+            {{ form.priority }}
+            <span class="error">
+                {% if form.priority.errors %}
+                    {% for error in form.priority.errors %}
+                        {{ error }}
+                    {% endfor %}
+                {% endif %}
+            </span>
+        </p>
+        <p>
+            <input type="submit" class="button" value="Add task" />
+        </p>
+    </form>
 </div>
 <div class="entries">
     <br /><br />

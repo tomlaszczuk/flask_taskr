@@ -3,14 +3,16 @@ from wtforms import TextField, DateField, IntegerField, SelectField, \
     PasswordField
 from wtforms.validators import DataRequired, Length, EqualTo, Email
 
+
 message = "Password must match"
+date = "input date by YYYY/MM/DD (ex. 2014/10/10)"
 
 
 class AddTaskForm(Form):
     task_id = IntegerField('Task id')
     name = TextField('Task name', validators=[DataRequired()])
     due_date = DateField('Due date(yy/mm/ddd)',
-                         validators=[DataRequired()],
+                         validators=[DataRequired(message=date)],
                          format="%Y/%m/%d")
     priority = SelectField('Priority', validators=[DataRequired()],
                            choices=[('1', '1'), ('2', '2'), ('3', '3'),
