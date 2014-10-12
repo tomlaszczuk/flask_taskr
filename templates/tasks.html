@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to Flask Task</h1>
-<p>You are logged in as {{ user.name }}. Click <a href="{{ url_for('logout') }}">here</a> to logout</p>
+<p>You are logged in as {{ user.name }}. Your role is &lt;{{ user.role }}&gt; Click <a href="{{ url_for('logout') }}">here</a> to logout</p>
 <div class="add-task">
     <form class="form-signin" role="form" action="{{ url_for('add_task') }}" method="POST" name="add-task">
         {{ form.csrf_token }}
@@ -44,9 +44,9 @@
 </div>
 <div class="entries">
     <br /><br />
-    <h2>Open tasks</h2>
+    <div class="lead">Open tasks</div>
     <div class="datagrid">
-        <table>
+        <table class="table table-stripped">
             <thead>
                 <tr>
                     <th width="200px"><strong>Task name</strong></th>
@@ -54,7 +54,7 @@
                     <th width="100px"><strong>Posted date</strong></th>
                     <th width="50px"><strong>Priotiy</strong></th>
                     <th width="90px"><strong>Posted by</strong></th>
-                    <th><strong>Actions</strong></th>
+                    <th witdh="90px"><strong>Actions</strong></th>
                 </tr>
             </thead>
             {% for task in open_tasks %}
@@ -64,7 +64,7 @@
                     <td width="100px">{{ task.posted_date }}</td>
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
-                    <td>
+                    <td width="90px">
                         <a href="{{ url_for('complete_task', task_id=task.task_id) }}">Mark as complete </a><br/>
                         <a href="{{ url_for('delete_task', task_id=task.task_id) }}"> Delete task</a>
                     </td>
@@ -75,9 +75,9 @@
 </div>
 <br /><br />
 <div class="entries">
-    <h2>Closed tasks</h2>
+    <div class="lead">Closed tasks</div>
     <div class="datagrid">
-        <table>
+        <table class="table table-stripped">
             <thead>
                 <tr>
                     <th width="200px"><strong>Task name</strong></th>
@@ -85,7 +85,7 @@
                     <th width="100px"><strong>Posted date</strong></th>
                     <th width="50px"><strong>Priotiy</strong></th>
                     <th width="90px"><strong>Posted by</strong></th>
-                    <th><strong>Actions</strong></th>
+                    <th width="90px"><strong>Actions</strong></th>
                 </tr>
             </thead>
             {% for task in closed_tasks %}
@@ -95,7 +95,7 @@
                     <td width="100px">{{ task.posted_date }}</td>
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
-                    <td>
+                    <td width="90px">
                         <a href="{{ url_for('delete_task', task_id=task.task_id) }}"> Delete task</a>
                     </td>
                 </tr>

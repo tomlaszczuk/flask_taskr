@@ -27,8 +27,8 @@
     <p>
         {{ form.password(placeholder="password") }}
         <span class="error">
-            {% if form.name.password %}
-                {% for error in form.name.password %}
+            {% if form.password.errors %}
+                {% for error in form.password.errors %}
                     {{ error }}
                 {% endfor %}
             {% endif %}
@@ -44,7 +44,7 @@
             {% endif %}
         </span>
     </p>
-    <button type="submit" class="btn btn-sm btn-succes">Register</button>
+    <button type="submit" class="btn btn-sm btn-success">Register</button>
 </form>
 <p>Already registered? Please, click <a href="{{ url_for('login') }}">here</a> to login</p>
 {% endblock %}

@@ -41,6 +41,12 @@ class TestCase(unittest.TestCase):
         db.session.add(new_user)
         db.session.commit()
 
+    def create_superuser(self, name, email, password):
+        superuser = User(name=name, email=email, password=password,
+                         role="admin")
+        db.session.add(superuser)
+        db.session.commit()
+
     def post_task(self, task_name, due_date="2014/10/20",
                   posted_date='2014/10/11'):
         return self.app.post("/add", data=dict(name=task_name,
@@ -67,6 +73,10 @@ class TestCase(unittest.TestCase):
         response = self.register("newuser", "newuser@com.pl", "newuser")
         self.assertIn("You have been succesfully registered. Please login",
                       response.data)
+
+    def test_user_cannot_register_unless_all_fields_filled(self):
+        response = self.register("fooBar", "foobar@foobar.pl", "")
+        self.assertIn('This field is required', response.data)
 
     def test_form_is_present_on_login_page(self):
         response = self.app.get("/")
@@ -142,6 +152,41 @@ class TestCase(unittest.TestCase):
         self.login("FooBar", "password")
         self.app.get("/tasks", follow_redirects=True)
         self.post_task("Go to movies")
+        response = self.app.get("/delete/1", follow_redirects=True)
+        self.assertIn("Task has been deleted", response.data)
+        task = db.session.query(Task).all()
+        self.assertEquals([], task)
+
+    def test_default_user_role(self):
+        db.session.add(User("tomek", "tomek@tomek.pl", "tomek123"))
+        db.session.commit()
+        users = db.session.query(User).all()
+        for user in users:
+            self.assertEquals(user.role, "user")
+
+    def test_superuser_can_mark_tasks_not_created_by_him(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task("My ordinary user task")
+        self.app.get("/logout", follow_redirects=True)
+        self.create_superuser("admin", "admin@admin.com", "password")
+        self.login("admin", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        response = self.app.get("/mark/1", follow_redirects=True)
+        self.assertIn("Task has been marked as completed", response.data)
+        status = db.session.query(Task).all()[0].status
+        self.assertEquals(status, 0)
+
+    def test_superuser_can_delete_tasks_not_created_by_him(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task("My ordinary user task")
+        self.app.get("/logout", follow_redirects=True)
+        self.create_superuser("admin", "admin@admin.com", "password")
+        self.login("admin", "password")
+        self.app.get("/tasks", follow_redirects=True)
         response = self.app.get("/delete/1", follow_redirects=True)
         self.assertIn("Task has been deleted", response.data)
         task = db.session.query(Task).all()

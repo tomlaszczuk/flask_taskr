@@ -3,3 +3,4 @@ db_create.py
 _flasktaskr.db
 db_migrate.py
 test.db
+.coverage
