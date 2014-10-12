@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to Flask Task</h1>
-<p>You are logged in as {{ user.name }}. Your role is &lt;{{ user.role }}&gt; Click <a href="{{ url_for('logout') }}">here</a> to logout</p>
+<p>You are logged in as {{ user.name }}. Your role is &lt;{{ user.role }}&gt; Click <a href="{{ url_for('users.logout') }}">here</a> to logout</p>
 <div class="add-task">
-    <form class="form-signin" role="form" action="{{ url_for('add_task') }}" method="POST" name="add-task">
+    <form class="form-signin" role="form" action="{{ url_for('tasks.add_task') }}" method="POST" name="add-task">
         {{ form.csrf_token }}
         <div class="lead">Add a new task</div>
         <p>
@@ -65,8 +65,8 @@
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
                     <td width="90px">
-                        <a href="{{ url_for('complete_task', task_id=task.task_id) }}">Mark as complete </a><br/>
-                        <a href="{{ url_for('delete_task', task_id=task.task_id) }}"> Delete task</a>
+                        <a href="{{ url_for('tasks.complete_task', task_id=task.task_id) }}">Mark as complete </a><br/>
+                        <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -96,7 +96,7 @@
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
                     <td width="90px">
-                        <a href="{{ url_for('delete_task', task_id=task.task_id) }}"> Delete task</a>
+                        <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
                     </td>
                 </tr>
             {% endfor %}

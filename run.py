@@ -1,5 +1,5 @@
 #!/home/tomek/.envs/flask/bin/python
-from views import app
+from project import app
 
 if __name__ == "__main__":
     app.run(debug=True)

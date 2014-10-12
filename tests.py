@@ -3,9 +3,9 @@ import os
 import unittest
 
 
-from views import app, db
+from project import app, db
 from config import BASE_DIR
-from models import User, Task
+from project.models import User, Task
 
 TEST_DB = os.path.join(BASE_DIR, 'test.db')
 
@@ -27,13 +27,15 @@ class TestCase(unittest.TestCase):
     # ============================= helpers ================================= #
     def login(self, name, password):
         # helper function to keep our code keep DRY
-        return self.app.post("/", data=dict(name=name, password=password),
+        return self.app.post("/users/login",
+                             data=dict(name=name, password=password),
                              follow_redirects=True)
 
     def register(self, name, email, password):
-        return self.app.post("/register", data=dict(name=name, email=email,
-                                                    password=password,
-                                                    confirm=password),
+        return self.app.post("/users/register",
+                             data=dict(name=name, email=email,
+                                       password=password,
+                                       confirm=password),
                              follow_redirects=True)
 
     def create_user(self, name, email, password):
@@ -49,15 +51,15 @@ class TestCase(unittest.TestCase):
 
     def post_task(self, task_name, due_date="2014/10/20",
                   posted_date='2014/10/11'):
-        return self.app.post("/add", data=dict(name=task_name,
-                                               due_date=due_date,
-                                               posted_date=posted_date,
-                                               priority='10',
-                                               status='1'),
+        return self.app.post("/tasks/add", data=dict(name=task_name,
+                                                     due_date=due_date,
+                                                     posted_date=posted_date,
+                                                     priority='10',
+                                                     status='1'),
                              follow_redirects=True)
 
     def logout(self):
-        return self.app.get("/logout", follow_redirects=True)
+        return self.app.get("/users/logout", follow_redirects=True)
     # ======================================================================= #
 
     # ============================= test functions ========================== #
@@ -79,7 +81,7 @@ class TestCase(unittest.TestCase):
         self.assertIn('This field is required', response.data)
 
     def test_form_is_present_on_login_page(self):
-        response = self.app.get("/")
+        response = self.app.get("/users/login")
         self.assertEquals(response.status_code, 200)
         self.assertIn("Please login to see your tasks", response.data)
 
@@ -118,7 +120,7 @@ class TestCase(unittest.TestCase):
                       response.data)
 
     def test_not_logged_users_cannot_see_tasks(self):
-        response = self.app.get("/tasks", follow_redirects=True)
+        response = self.app.get("/", follow_redirects=True)
         self.assertIn("You need to login first", response.data)
 
     def test_users_can_add_task(self):
@@ -142,7 +144,7 @@ class TestCase(unittest.TestCase):
         self.login("FooBar", "password")
         self.app.get("/tasks", follow_redirects=True)
         self.post_task("Go to movies")
-        response = self.app.get("/mark/1", follow_redirects=True)
+        response = self.app.get("/tasks/mark/1", follow_redirects=True)
         self.assertIn("Task has been marked as completed", response.data)
         status = db.session.query(Task).all()[0].status
         self.assertEquals(status, 0)
@@ -152,7 +154,7 @@ class TestCase(unittest.TestCase):
         self.login("FooBar", "password")
         self.app.get("/tasks", follow_redirects=True)
         self.post_task("Go to movies")
-        response = self.app.get("/delete/1", follow_redirects=True)
+        response = self.app.get("/tasks/delete/1", follow_redirects=True)
         self.assertIn("Task has been deleted", response.data)
         task = db.session.query(Task).all()
         self.assertEquals([], task)
@@ -169,11 +171,11 @@ class TestCase(unittest.TestCase):
         self.login("some_user", "password")
         self.app.get("/tasks", follow_redirects=True)
         self.post_task("My ordinary user task")
-        self.app.get("/logout", follow_redirects=True)
+        self.app.get("/users/logout", follow_redirects=True)
         self.create_superuser("admin", "admin@admin.com", "password")
         self.login("admin", "password")
         self.app.get("/tasks", follow_redirects=True)
-        response = self.app.get("/mark/1", follow_redirects=True)
+        response = self.app.get("/tasks/mark/1", follow_redirects=True)
         self.assertIn("Task has been marked as completed", response.data)
         status = db.session.query(Task).all()[0].status
         self.assertEquals(status, 0)
@@ -183,11 +185,11 @@ class TestCase(unittest.TestCase):
         self.login("some_user", "password")
         self.app.get("/tasks", follow_redirects=True)
         self.post_task("My ordinary user task")
-        self.app.get("/logout", follow_redirects=True)
+        self.app.get("/users/logout", follow_redirects=True)
         self.create_superuser("admin", "admin@admin.com", "password")
         self.login("admin", "password")
         self.app.get("/tasks", follow_redirects=True)
-        response = self.app.get("/delete/1", follow_redirects=True)
+        response = self.app.get("/tasks/delete/1", follow_redirects=True)
         self.assertIn("Task has been deleted", response.data)
         task = db.session.query(Task).all()
         self.assertEquals([], task)
