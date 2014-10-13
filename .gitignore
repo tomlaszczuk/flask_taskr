@@ -4,3 +4,4 @@ db_migrate.py
 test.db
 .coverage
 create_superuser.py
+fabfile.py

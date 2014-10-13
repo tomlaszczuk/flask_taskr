@@ -265,15 +265,6 @@ class TestCase(unittest.TestCase):
         self.assertEquals(404, response.status_code)
         self.assertIn('Sorry. There is nothing here', response.data)
 
-    def test_500_error(self):
-        bad_user = User(name="Tomek", email="tomek@bad.pl",
-                        password="password")
-        db.session.add(bad_user)
-        db.session.commit()
-        response = self.login("Tomek", "password")
-        self.assertEquals(500, response.status_code)
-        self.assertNotIn("ValueError: Invalid salt", response.data)
-        self.assertIn("Something went terribly wrong", response.data)
         # =================================================================== #
 
 if __name__ == "__main__":
