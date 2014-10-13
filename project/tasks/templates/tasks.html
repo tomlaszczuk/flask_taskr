@@ -68,6 +68,7 @@
                         <a href="{{ url_for('tasks.complete_task', task_id=task.task_id) }}">Mark as complete</a><br/>
                         <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
                         {% else %}
+                        <p>N/A</p>
                         {% endif %}
                     </td>
                 </tr>
