@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to Flask Task</h1>
-<p>You are logged in as {{ user.name }}. Your role is &lt;{{ user.role }}&gt; Click <a href="{{ url_for('users.logout') }}">here</a> to logout</p>
 <div class="add-task">
     <form class="form-signin" role="form" action="{{ url_for('tasks.add_task') }}" method="POST" name="add-task">
         {{ form.csrf_token }}
@@ -28,7 +27,7 @@
         </p>
         <p>
             {{ form.priority.label }}
-            {{ form.priority }}
+            {{ form.priority(class="form-control", style="max-width: 60px;") }}
             <span class="error">
                 {% if form.priority.errors %}
                     {% for error in form.priority.errors %}
@@ -65,8 +64,10 @@
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
                     <td width="90px">
-                        <a href="{{ url_for('tasks.complete_task', task_id=task.task_id) }}">Mark as complete </a><br/>
+                        {% if task.poster.name == user.name or user.role == "admin" %}
+                        <a href="{{ url_for('tasks.complete_task', task_id=task.task_id) }}">Mark as complete</a><br/>
                         <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -96,7 +97,9 @@
                     <td width="50px">{{ task.priority }}</td>
                     <td width="90px">{{ task.poster.name }}</td>
                     <td width="90px">
-                        <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
+                        {% if task.poster.name == user.name or user.role == "admin" %}
+                            <a href="{{ url_for('tasks.delete_task', task_id=task.task_id) }}"> Delete task</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

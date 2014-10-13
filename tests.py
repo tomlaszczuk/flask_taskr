@@ -3,7 +3,7 @@ import os
 import unittest
 
 
-from project import app, db
+from project import app, db, bcrypt
 from config import BASE_DIR
 from project.models import User, Task
 
@@ -17,6 +17,7 @@ class TestCase(unittest.TestCase):
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + TEST_DB
+        app.config['DEBUG'] = False
         self.app = app.test_client()
         db.create_all()
 
@@ -33,18 +34,22 @@ class TestCase(unittest.TestCase):
 
     def register(self, name, email, password):
         return self.app.post("/users/register",
-                             data=dict(name=name, email=email,
-                                       password=password,
-                                       confirm=password),
+                             data=dict(
+                                 name=name, email=email,
+                                 password=password,
+                                 confirm=password
+                             ),
                              follow_redirects=True)
 
     def create_user(self, name, email, password):
-        new_user = User(name=name, email=email, password=password)
+        new_user = User(name=name, email=email,
+                        password=bcrypt.generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
 
     def create_superuser(self, name, email, password):
-        superuser = User(name=name, email=email, password=password,
+        superuser = User(name=name, email=email,
+                         password=bcrypt.generate_password_hash(password),
                          role="admin")
         db.session.add(superuser)
         db.session.commit()
@@ -57,6 +62,14 @@ class TestCase(unittest.TestCase):
                                                      priority='10',
                                                      status='1'),
                              follow_redirects=True)
+
+    def create_task(self, task_name, user_id, due_date="2014/10/20",
+                    posted_date="2014/10/11"):
+        new_task = Task(name=task_name, due_date=due_date,
+                        posted_date=posted_date, priority=10, status=1,
+                        user_id=user_id)
+        db.session.add(new_task)
+        db.session.commit()
 
     def logout(self):
         return self.app.get("/users/logout", follow_redirects=True)
@@ -93,7 +106,7 @@ class TestCase(unittest.TestCase):
         self.register(name="foofoofoo", email="foo@com.pl",
                       password="foofoofoo")
         response = self.login(name="foofoofoo", password="foofoofoo")
-        self.assertIn("You are logged in", response.data)
+        self.assertIn("You have succesfully logged in", response.data)
 
     def test_invalid_form_name(self):
         self.register(name="foofoofoo", email="foo@com.pl",
@@ -193,7 +206,75 @@ class TestCase(unittest.TestCase):
         self.assertIn("Task has been deleted", response.data)
         task = db.session.query(Task).all()
         self.assertEquals([], task)
-    # ======================================================================= #
+
+    def test_username_and_user_role_is_display_afert_login(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        response = self.app.get("/tasks", follow_redirects=True)
+        self.assertIn("some_user", response.data)
+        self.assertIn("Your role is user", response.data)
+
+    def test_no_task_modify_links_for_tasks_not_created_by_users(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task(task_name="Test task")
+        self.logout()
+        self.create_user("another_user", "another@user.com", "password")
+        self.login("another_user", "password")
+        response = self.app.get("/tasks", follow_redirects=True)
+        self.assertNotIn("Mark as complete", response.data)
+        self.assertNotIn("Delete task", response.data)
+
+    def test_users_can_see_task_modify_links_only_for_their_tasks(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task(task_name="Test task")
+        self.logout()
+        self.create_user("another_user", "another@user.com", "password")
+        self.login("another_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        response = self.post_task(task_name="Test task2")
+        self.assertIn("tasks/mark/2", response.data)
+        self.assertIn("tasks/delete/2", response.data)
+        self.assertNotIn("tasks/mark/1", response.data)
+        self.assertNotIn("tasks/delete/1", response.data)
+
+    def test_admin_users_can_see_all_tasks_modify_links(self):
+        self.create_user("some_user", "user@email.com", "password")
+        self.login("some_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task(task_name="Test task")
+        self.logout()
+        self.create_user("another_user", "another@user.com", "password")
+        self.login("another_user", "password")
+        self.app.get("/tasks", follow_redirects=True)
+        self.post_task(task_name="Test2 task2")
+        self.logout()
+        self.create_superuser("superuser", "super@user.com", "password")
+        self.login("superuser", "password")
+        response = self.app.get('/tasks', follow_redirects=True)
+        self.assertIn("tasks/mark/2", response.data)
+        self.assertIn("tasks/delete/2", response.data)
+        self.assertIn("tasks/mark/1", response.data)
+        self.assertIn("tasks/delete/1", response.data)
+
+    def test_404_error(self):
+        response = self.app.get("/this-route-does-not-exist")
+        self.assertEquals(404, response.status_code)
+        self.assertIn('Sorry. There is nothing here', response.data)
+
+    def test_500_error(self):
+        bad_user = User(name="Tomek", email="tomek@bad.pl",
+                        password="password")
+        db.session.add(bad_user)
+        db.session.commit()
+        response = self.login("Tomek", "password")
+        self.assertEquals(500, response.status_code)
+        self.assertNotIn("ValueError: Invalid salt", response.data)
+        self.assertIn("Something went terribly wrong", response.data)
+        # =================================================================== #
 
 if __name__ == "__main__":
     unittest.main()

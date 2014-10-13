@@ -28,6 +28,13 @@
                     </li>
                     {% endif %}
                 </ul>
+                {% if session.logged_in and user %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li>Welcome {{ user.name }}</li>
+                    <br/>
+                    <li>Your role is {{ user.role }}</li>
+                </ul>
+                {% endif %}
             </div>
             <!--/.nav-collapse -->
         </div>

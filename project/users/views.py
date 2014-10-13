@@ -1,7 +1,7 @@
 from flask import render_template, redirect, flash, session, url_for, \
     request, Blueprint
 from sqlalchemy.exc import IntegrityError
-from project import db
+from project import db, bcrypt
 from project.views import login_required
 from project.models import User
 from .forms import RegisterForm, LoginForm
@@ -27,18 +27,17 @@ def login():
     form = LoginForm(request.form)
     if request.method == 'POST':
         if form.validate_on_submit():
-            user = User.query.filter_by(
-                name=request.form['name'], password=request.form['password']
-            ).first()
-            if user is None:
-                error = "Invalid username or password"
-                return render_template("login.html", form=form, error=error)
-            else:
+            user = User.query.filter_by(name=request.form['name']).first()
+            if user is not None and bcrypt.check_password_hash(
+                    user.password, request.form['password']):
                 session['logged_in'] = True
                 session['user_id'] = user.id
                 session['role'] = user.role
                 flash("You have succesfully logged in, %s" % user.name)
                 return redirect(url_for('tasks.tasks'))
+            else:
+                error = "Invalid username or password"
+                return render_template("login.html", form=form, error=error)
         else:
             return render_template("login.html", form=form, error=error)
     return render_template("login.html", form=form)
@@ -50,8 +49,10 @@ def register():
     form = RegisterForm(request.form)
     if request.method == "POST":
         if form.validate_on_submit():
-            new_user = User(name=form.name.data, email=form.email.data,
-                            password=form.password.data)
+            new_user = User(
+                name=form.name.data, email=form.email.data,
+                password=bcrypt.generate_password_hash(form.password.data)
+            )
             try:
                 db.session.add(new_user)
                 db.session.commit()
